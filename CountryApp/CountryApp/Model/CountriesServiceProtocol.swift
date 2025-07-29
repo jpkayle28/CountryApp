@@ -6,5 +6,8 @@
 //
 
 protocol CountriesServiceProtocol {
-    func fetchCountries() async throws -> [Country]
+    
+    func fetchAllCountries() async throws -> [Country]
+    func searchCountries(by name: String) async throws -> [Country]
+    
 }

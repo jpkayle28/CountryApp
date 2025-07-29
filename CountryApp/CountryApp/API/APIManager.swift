@@ -13,9 +13,9 @@ final class APIManager: CountriesServiceProtocol {
     
     private init() {}
     
-    private let baseURL = "https://restcountries.com/v2/all?fields=name,capital,flag,population,currencies"
-    
-    func fetchCountries() async throws -> [Country] {
+    func fetchAllCountries() async throws -> [Country] {
+        let baseURL = "https://restcountries.com/v2/all?fields=name,capital,flag,population,currencies"
+
         guard let url = URL(string: baseURL) else {
             throw URLError(.badURL)
         }
@@ -30,20 +30,39 @@ final class APIManager: CountriesServiceProtocol {
         return try decoder.decode([Country].self, from: data)
     }
     
+    func searchCountries(by name: String) async throws -> [Country] {
+        let encodedName = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
+        let urlString = "https://restcountries.com/v2/name/\(encodedName)?fields=name,capital,flag,population,currencies"
+        
+        guard let url = URL(string: urlString) else {
+            throw URLError(.badURL)
+        }
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            try validate(response)
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .useDefaultKeys
+            return try decoder.decode([Country].self, from: data)
+        } catch APIError.notFound {
+            return []
+        }
+    }
+    
     private func validate(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.cannotParseResponse)
+            throw APIError.invalidResponse
         }
         
         switch httpResponse.statusCode {
             case 200..<300:
                 return
             case 401:
-                throw URLError(.userAuthenticationRequired)
+                throw APIError.unauthorized
             case 404:
-                throw URLError(.fileDoesNotExist)
+                throw APIError.notFound
             default:
-                throw URLError(.badServerResponse)
+                throw APIError.serverError
         }
     }
 }

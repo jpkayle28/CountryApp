@@ -22,7 +22,7 @@ class APIManagerTests: XCTestCase {
         mockService.resultToReturn = .success([sampleCountry])
         
         // Act
-        let countries = try await mockService.fetchCountries()
+        let countries = try await mockService.fetchAllCountries()
         
         // Assert
         XCTAssertTrue(mockService.fetchCountriesCalled)
@@ -38,7 +38,7 @@ class APIManagerTests: XCTestCase {
         
         // Act & Assert
         do {
-            let countries = try await mockService.fetchCountries()
+            let countries = try await mockService.fetchAllCountries()
             // If it somehow succeeds, print the unexpected result
             print("Unexpected countries: \(countries)")
             XCTFail("Expected failure, but succeeded.")
@@ -57,7 +57,7 @@ class APIManagerTests: XCTestCase {
         
         // Act
         do {
-            let countries = try await service.fetchCountries()
+            let countries = try await service.fetchAllCountries()
             
             // Assert
             XCTAssertFalse(countries.isEmpty, "Expected non-empty countries array from live API")
@@ -66,5 +66,30 @@ class APIManagerTests: XCTestCase {
         } catch {
             XCTFail("Live API call failed with error: \(error)")
         }
+    }
+    
+    func testSearchCountriesByNameReturnsResults() async throws {
+        // Given
+        let manager = APIManager.shared
+        let searchTerm = "France"
+        
+        // When
+        let countries = try await manager.searchCountries(by: searchTerm)
+        
+        // Then
+        XCTAssertFalse(countries.isEmpty, "Search should return at least one country for a valid name")
+        XCTAssertTrue(countries.contains { $0.name.contains("France") }, "Result should contain 'France'")
+    }
+    
+    func testSearchCountriesInvalidReturnsEmpty() async throws {
+        // Given
+        let manager = APIManager.shared
+        let searchTerm = "InvalidCountryNameThatDoesNotExist"
+        
+        // When
+        let countries = try await manager.searchCountries(by: searchTerm)
+        
+        // Then
+        XCTAssertTrue(countries.isEmpty, "Search with invalid name should return empty array")
     }
 }
