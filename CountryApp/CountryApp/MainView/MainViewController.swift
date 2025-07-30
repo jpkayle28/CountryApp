@@ -10,15 +10,21 @@ import SwiftUI
 
 class MainViewController: BaseViewController<MainView> {
     
-    init() {
-        let mainView = MainView { country in
-            print(country.name)
-        }
-        super.init(rootView: mainView)
+    override func viewDidLoad() {
+        super.viewDidLoad()
         title = "Countries"
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override func makeRootView() -> MainView {
+        return MainView { [weak self] country in
+            self?.goToDetail(country: country)
+        }
     }
+    
+    func goToDetail(country: Country) {
+        let detailViewController = DetailViewController()
+        detailViewController.country = country
+        navigationController?.pushViewController(detailViewController, animated: true)
+    }
+    
 }

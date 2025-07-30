@@ -5,7 +5,7 @@
 //  Created by Jean-Pierre Kayle on 29/07/2025.
 //
 
-import Foundation
+import UIKit
 
 final class APIManager: CountriesServiceProtocol {
     
@@ -63,6 +63,22 @@ final class APIManager: CountriesServiceProtocol {
                 throw APIError.notFound
             default:
                 throw APIError.serverError
+        }
+    }
+    
+    func downloadImage(for urlString: String?) async throws -> UIImage {
+        guard let url = URL(string: urlString ?? "") else {
+            throw APIError.notFound
+        }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url, delegate: nil)
+            try validate(response)
+            guard let image = SVGHelper.default.imageFromSVGData(data) else {
+                throw APIError.invalidImage
+            }
+            return image
+        } catch let error {
+            throw error
         }
     }
 }

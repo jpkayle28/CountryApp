@@ -13,9 +13,10 @@ struct Country: Codable, Identifiable, Equatable {
     let name: String
     let capital: String?
     let currencies: [Currency]?
+    let flag: String?
     
     private enum CodingKeys: String, CodingKey {
-        case name, capital, currencies
+        case name, capital, currencies, flag
     }
 }
 
@@ -25,4 +26,7 @@ struct Currency: Codable, Equatable {
     let name: String?
     let symbol: String?
     
+    var displayString: String {
+        "\(name ?? "") (\(code ?? "")) \(symbol ?? "")"
+    }
 }

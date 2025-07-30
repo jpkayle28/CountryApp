@@ -10,23 +10,18 @@ import SwiftUI
 
 class BaseViewController<Content: View>: UIViewController {
     
-    private let rootView: Content
-    
-    init(rootView: Content) {
-        self.rootView = rootView
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupHostingController()
     }
     
+    /// Subclasses override this to provide the SwiftUI view
+    func makeRootView() -> Content {
+        fatalError("Subclasses must override makeRootView()")
+    }
+    
     private func setupHostingController() {
+        let rootView = makeRootView()
         let hostingController = UIHostingController(rootView: rootView)
         addChild(hostingController)
         
